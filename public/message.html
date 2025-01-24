@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Page</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #messages {
+            margin-top: 20px;
+        }
+        #messages p {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Application</h1>
+
+    <div id="welcome-message"></div>
+
+    <form id="chat-form">
+        <input type="text" id="message" placeholder="Your Message" required>
+        <button type="submit">Send</button>
+    </form>
+
+    <div id="messages"></div>
+
+    <script>
+        const socket = io('http://localhost:5000'); 
+        const messagesDiv = document.getElementById('messages');
+        const form = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message');
+        
+        const name = sessionStorage.getItem('userName');
+        if (name) {
+            document.getElementById('welcome-message').textContent = `Welcome, ${name}!`;
+        } 
+
+        const storedMessages = JSON.parse(sessionStorage.getItem('messages')) || [];
+        storedMessages.forEach(({ name, message, createat }) => {
+            const messageElement = document.createElement('p');
+            messageElement.textContent = `${name}: ${message} at ${new Date(createat).toLocaleString()}`;
+            messagesDiv.appendChild(messageElement);
+        });
+
+        socket.on('chat message', ({ name, message, createat }) => {
+          
+            const storedMessages = JSON.parse(sessionStorage.getItem('messages')) || [];
+            const messageExists = storedMessages.some(msg => msg.name === name && msg.message === message && msg.createat === createat);
+
+        
+            if (!messageExists) {
+                const messageElement = document.createElement('p');
+                messageElement.textContent = `${name}: ${message} at ${new Date(createat).toLocaleString()}`;
+                messagesDiv.appendChild(messageElement);
+
+            
+                storedMessages.push({ name, message, createat });
+                sessionStorage.setItem('messages', JSON.stringify(storedMessages));
+            }
+        });
+
+        
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const message = messageInput.value.trim();
+            if (message) {
+                const createat = new Date();
+                const userMessage = { name, message, createat };
+
+                const storedMessages = JSON.parse(sessionStorage.getItem('messages')) || [];
+                storedMessages.push(userMessage);
+                sessionStorage.setItem('messages', JSON.stringify(storedMessages));
+
+                socket.emit('chat message', { name, message, createat });
+
+                const messageElement = document.createElement('p');
+                messageElement.textContent = `${name}: ${message} at ${new Date(createat).toLocaleString()}`;
+                messagesDiv.appendChild(messageElement);
+
+              
+                messageInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

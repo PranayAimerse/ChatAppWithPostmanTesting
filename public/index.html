@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Chat App</h1>
+    <form id="start-form">
+        <input type="text" id="name" placeholder="Enter your name" required>
+        <button type="submit">Start</button>
+    </form>
+
+    <script>
+        document.getElementById('start-form').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const name = document.getElementById('name').value.trim();
+            if (name) {
+               
+                sessionStorage.setItem('userName', name);
+               
+                window.location.href = 'message.html';
+            } else {
+                alert('Please enter your name!');
+            }
+        });
+    </script>
+</body>
+</html>
